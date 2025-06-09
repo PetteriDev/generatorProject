@@ -11,21 +11,23 @@ def get_ramirent_titles():
             print(f"Opening {URL}")
             page.goto(URL, wait_until='networkidle')
 
-            print("Waiting for product titles to appear...")
-            page.wait_for_selector("a.em-block-product-card__link span.screen-reader-text", timeout=15000)
+            print("Waiting for product cards to appear...")
+            page.wait_for_selector("article.em-block-product-card", timeout=20000)
 
-            span_elements = page.query_selector_all("a.em-block-product-card__link span.screen-reader-text")
-            print(f"Found {len(span_elements)} titles, printing first 5:\n")
+            card_elements = page.query_selector_all("article.em-block-product-card")
+            print(f"Found {len(card_elements)} cards, printing first 5:\n")
 
             titles = []
-            for i, elem in enumerate(span_elements[:5]):
+            for i, card in enumerate(card_elements[:5]):
                 try:
-                    raw_text = elem.inner_text().strip()
-                    cleaned_text = raw_text.replace('\xa0', ' ')
-                    print(f"{i + 1}: {cleaned_text}")
-                    titles.append(cleaned_text)
+                    title_elem = card.query_selector("span.screen-reader-text")
+                    img_elem = card.query_selector("div.em-block-product-card__image img")
+                    title = title_elem.inner_text().strip() if title_elem else ""
+                    photo_url = img_elem.get_attribute("src") if img_elem else ""
+                    print(f"{i + 1}: {title} | {photo_url}")
+                    titles.append((title, photo_url))
                 except Exception as e:
-                    print(f"Error reading title {i}: {e}")
+                    print(f"Error reading card {i}: {e}")
 
             browser.close()
             print("Returning titles...\n")

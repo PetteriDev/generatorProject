@@ -10,17 +10,27 @@ def get_cramo_titles():
         print(f"Opening {URL}")
         page.goto(URL, wait_until='networkidle')
 
-        print("Waiting for product titles to appear...")
-        page.wait_for_selector("div.product-card-title", timeout=15000)
+        # Accept cookies if present
+        try:
+            page.click('button#onetrust-accept-btn-handler', timeout=5000)
+            print("Accepted cookies.")
+        except Exception:
+            pass
 
-        title_elements = page.query_selector_all("div.product-card-title")
-        print(f"Found {len(title_elements)} titles, printing first 5:\n")
+        print("Waiting for product cards to appear...")
+        page.wait_for_selector("article.product-card", timeout=20000)
+
+        card_elements = page.query_selector_all("article.product-card")
+        print(f"Found {len(card_elements)} cards, printing first 5:\n")
 
         titles = []
-        for i, elem in enumerate(title_elements[:5]):
-            title = elem.inner_text().strip()
-            print(f"{i + 1}: {title}")
-            titles.append(title)
+        for i, card in enumerate(card_elements[:5]):
+            title_elem = card.query_selector("div.product-card-title")
+            img_elem = card.query_selector("div.product-card-image img")
+            title = title_elem.inner_text().strip() if title_elem else ""
+            photo_url = img_elem.get_attribute("src") if img_elem else ""
+            print(f"{i + 1}: {title} | {photo_url}")
+            titles.append((title, photo_url))
 
         browser.close()
-        return titles  # 🔁 PALAUTUS
+        return titles

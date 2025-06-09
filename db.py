@@ -32,15 +32,14 @@ def get_next_run_id():
 def insert_titles(table_name, titles, run_id):
     with get_connection() as conn:
         with conn.cursor() as cur:
-            for title in titles:
+            for title, photo_url in titles:
                 cur.execute(
                     f"""
-                    INSERT INTO {table_name} (title, run_id)
-                    VALUES (%s, %s)
+                    INSERT INTO {table_name} (title, run_id, photo_url)
+                    VALUES (%s, %s, %s)
                     """,
-                    (title, run_id)
+                    (title, run_id, photo_url)
                 )
-                
         conn.commit()
 
 def get_latest_generators(table_name):

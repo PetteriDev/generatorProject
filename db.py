@@ -40,4 +40,18 @@ def insert_titles(table_name, titles, run_id):
                     """,
                     (title, run_id)
                 )
+                
         conn.commit()
+
+def get_latest_generators(table_name):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                SELECT * FROM {table_name}
+                WHERE run_id = (
+                    SELECT MAX(run_id) FROM {table_name}
+                )
+                ORDER BY id
+            """)
+            rows = cur.fetchall()
+            return rows

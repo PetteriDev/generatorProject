@@ -25,14 +25,13 @@ def get_cramo_titles():
         print(f"Found {len(card_elements)} cards, printing first 5:\n")
 
         titles = []
-        for i, card in enumerate(card_elements[:5]):
+        for i, card in enumerate(card_elements):
             try:
                 title_elem = card.query_selector("div.product-card-title")
                 brand_elem = card.query_selector("div.product-card-brand")
                 img_elem = card.query_selector("div.product-card-image img")
                 link_elem = card.query_selector("a.product-card-content")
                 title = title_elem.inner_text().strip() if title_elem else ""
-                title = normalize_title(title)
                 brand = brand_elem.inner_text().strip() if brand_elem else ""
                 photo_url = img_elem.get_attribute("src") if img_elem else ""
                 rel_link = link_elem.get_attribute("href") if link_elem else ""

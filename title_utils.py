@@ -6,6 +6,8 @@ def normalize_title(title: str) -> str:
     - Remove 'Hinattava', 'Traileri', 'Trailer'
     - Ensure 'Generator Diesel' at start
     - Always use ≤ before power value
+    - Remove extra/duplicate ≤ or < signs
+    - Remove 'STAGE V' and similar suffixes
     - Standardize kVA/kW formatting
     - Remove trailing commas and duplicate 'diesel'
     """
@@ -13,6 +15,9 @@ def normalize_title(title: str) -> str:
 
     # Remove 'Hinattava', 'Traileri', 'Trailer' (case-insensitive)
     t = re.sub(r'\b(Hinattava|Traileri|Trailer)\b', '', t, flags=re.IGNORECASE)
+
+    # Remove 'STAGE V' and similar (case-insensitive, at end or after kVA/kW)
+    t = re.sub(r'(,?\s*STAGE\s*[IVXLCDM0-9]+)$', '', t, flags=re.IGNORECASE)
 
     # Remove extra spaces left by removal
     t = re.sub(r'\s+', ' ', t).strip()
@@ -24,14 +29,11 @@ def normalize_title(title: str) -> str:
     # Remove trailing ", diesel" or ",diesel"
     t = re.sub(r',?\s*diesel$', '', t, flags=re.IGNORECASE)
 
+    # Remove duplicate ≤ or <≤ or < signs before power value
+    t = re.sub(r'[<≤]+', '≤', t)
+
     # Ensure ≤ is present before the power value (if not already)
-    # Find the first kVA/kW value and add ≤ if not present
-    t = re.sub(
-        r'(?<!≤)\b(\d+[,\.]?\d*)\s*(kVA|kW)\b',
-        r'≤\1 \2',
-        t,
-        flags=re.IGNORECASE
-    )
+    t = re.sub(r'(?<!≤)\b(\d+[,\.]?\d*)\s*(kVA|kW)\b', r'≤\1 \2', t, flags=re.IGNORECASE)
 
     # Ensure ≤ is kept and spaced correctly
     t = re.sub(r'≤\s*', '≤', t)
@@ -49,3 +51,11 @@ def normalize_title(title: str) -> str:
     t = f"Generator Diesel {t}".strip()
 
     return t
+
+def normalize_tax_text(tax_text: str) -> str:
+    """
+    Normalize tax text to English.
+    """
+    if tax_text and "ei sis. ALV" in tax_text:
+        return "excluding VAT"
+    return tax_text

@@ -32,13 +32,20 @@ def get_next_run_id():
 def insert_titles(table_name, titles, run_id):
     with get_connection() as conn:
         with conn.cursor() as cur:
-            for title, photo_url in titles:
+            for (
+                title, brand_or_model, product_link, photo_url,
+                price_amount, price_currency, price_tax_text
+            ) in titles:
                 cur.execute(
                     f"""
-                    INSERT INTO {table_name} (title, run_id, photo_url)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO {table_name} 
+                    (title, run_id, brand_or_model, product_link, photo_url, price_amount, price_currency, price_tax_text)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     """,
-                    (title, run_id, photo_url)
+                    (
+                        title, run_id, brand_or_model, product_link, photo_url,
+                        price_amount, price_currency, price_tax_text
+                    )
                 )
         conn.commit()
 

@@ -61,7 +61,13 @@ def get_latest_generators(table_name):
                 WHERE run_id = (
                     SELECT MAX(run_id) FROM {table_name}
                 )
-                ORDER BY id
+                ORDER BY 
+                    CASE 
+                        WHEN price_amount ~ ',' THEN 
+                            CAST(REPLACE(price_amount, ',', '.') AS FLOAT)
+                        ELSE 
+                            CAST(price_amount AS FLOAT)
+                    END DESC, id
             """)
             rows = cur.fetchall()
             return rows

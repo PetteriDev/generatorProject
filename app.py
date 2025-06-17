@@ -1,8 +1,10 @@
 from flask import Flask, render_template
 from db import get_latest_generators, get_latest_scraped_at
-
+import pytz
+from datetime import datetime
 
 app = Flask(__name__)
+finnish_tz = pytz.timezone("Europe/Helsinki")
 
 @app.route("/")
 def index():
@@ -11,6 +13,12 @@ def index():
 
     cramo_last_update = get_latest_scraped_at("cramo_generators")
     ramirent_last_update = get_latest_scraped_at("ramirent_generators")
+
+    # Convert to Finnish time if present
+    if cramo_last_update:
+        cramo_last_update = cramo_last_update.replace(tzinfo=pytz.utc).astimezone(finnish_tz)
+    if ramirent_last_update:
+        ramirent_last_update = ramirent_last_update.replace(tzinfo=pytz.utc).astimezone(finnish_tz)
 
     return render_template(
         "index.html",

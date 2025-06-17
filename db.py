@@ -13,7 +13,6 @@ DB_CONFIG = {
     "port": int(os.getenv("DB_PORT", 5432)),
 }
 
-
 @contextmanager
 def get_connection():
     conn = psycopg2.connect(**DB_CONFIG)
@@ -30,6 +29,11 @@ def get_next_run_id():
             return run_id
 
 def insert_titles(table_name, titles, run_id):
+    """
+    Insert scraped data into the specified table.
+    Each title tuple must contain:
+    (title, brand_or_model, product_link, photo_url, price_amount, price_currency, price_tax_text)
+    """
     with get_connection() as conn:
         with conn.cursor() as cur:
             for (
@@ -61,3 +65,15 @@ def get_latest_generators(table_name):
             """)
             rows = cur.fetchall()
             return rows
+
+def get_latest_scraped_at(table_name):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                SELECT scraped_at FROM {table_name}
+                WHERE run_id = (SELECT MAX(run_id) FROM {table_name})
+                ORDER BY scraped_at DESC
+                LIMIT 1
+            """)
+            row = cur.fetchone()
+            return row[0] if row else None
